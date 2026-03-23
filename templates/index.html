@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EEG BCI Demo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
+  <style>
+    #hud {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white; font-family: monospace;
+      font-size: 18px; padding: 10px 24px;
+      border-radius: 8px; z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">Loading...</div>
+
+  <a-scene background="color: #1a1a2e">
+
+    <!-- Central orb — reacts to classification -->
+    <a-sphere id="orb"
+      position="0 1.6 -3"
+      radius="0.6"
+      color="#ffffff"
+      animation__pulse="property: scale; to: 1.15 1.15 1.15;
+                        dur: 800; dir: alternate; loop: true; easing: easeInOutSine">
+    </a-sphere>
+
+    <!-- Label floating above orb -->
+    <a-text id="label-text"
+      value="..."
+      align="center"
+      position="0 2.6 -3"
+      color="white"
+      scale="1.5 1.5 1.5">
+    </a-text>
+
+    <!-- Ground -->
+    <a-plane position="0 0 -4" rotation="-90 0 0"
+      width="10" height="10" color="#0d0d1a">
+    </a-plane>
+
+    <a-entity light="type: ambient; intensity: 0.4"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8"
+      position="1 2 1">
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    const orb = document.getElementById('orb');
+    const labelText = document.getElementById('label-text');
+    const hud = document.getElementById('hud');
+
+    // Poll Flask every 3 seconds
+    function poll() {
+      fetch('/state')
+        .then(r => r.json())
+        .then(data => {
+          const isFist = data.label === 'fist';
+
+          // Change orb colour: blue = fist, green = feet
+          orb.setAttribute('color', isFist ? '#4fc3f7' : '#81c784');
+          orb.setAttribute('material', 'emissive', isFist ? '#0d47a1' : '#1b5e20');
+
+          // Update labels
+          const display = isFist ? '✊  FIST' : '🦶  FEET';
+          labelText.setAttribute('value', display);
+          labelText.setAttribute('color', isFist ? '#4fc3f7' : '#81c784');
+          hud.textContent = `BCI State: ${display}  |  Epoch #${data.epoch_index}`;
+        });
+    }
+
+    poll();
+    setInterval(poll, 3000);
+  </script>
+</body>
+</html>
