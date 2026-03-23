@@ -6,7 +6,7 @@ import time
 
 app = Flask(__name__)
 
-# ── Load model and data ────────────────────────────────────────
+# Load model and data
 pipeline = joblib.load('model.pkl')
 le = joblib.load('label_encoder.pkl')
 X = np.load('X.npy')
