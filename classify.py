@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelEncoder
 from mne.decoding import CSP
 import joblib
 
-# ── Load preprocessed data ─────────────────────────────────────
+# Load preprocessed data
 X = np.load('X.npy')   # shape: (45, 64, 641)
 y = np.load('y.npy')   # shape: (45,)
 
@@ -16,7 +16,7 @@ y = le.fit_transform(y)
 print("Classes:", le.classes_, "→ encoded as 0 and 1")
 print("X shape:", X.shape, "| y shape:", y.shape)
 
-# ── Build CSP + SVM pipeline ───────────────────────────────────
+# Build CSP + SVM pipeline
 # CSP: finds spatial filters that maximise class separability
 # SVM: classifies the filtered features
 pipeline = Pipeline([
@@ -24,7 +24,7 @@ pipeline = Pipeline([
     ('svm', SVC(kernel='rbf', C=1.0, gamma='scale'))
 ])
 
-# ── Cross-validate ─────────────────────────────────────────────
+# Cross-validate
 # StratifiedKFold keeps class balance in each fold
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 scores = cross_val_score(pipeline, X, y, cv=cv, scoring='accuracy')
