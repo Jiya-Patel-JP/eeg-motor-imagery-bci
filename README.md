@@ -17,6 +17,8 @@ A Brain-Computer Interface (BCI) project that classifies imagined hand movements
 |------|------|
 | 🔵 Blue orb | 🟢 Green orb |
 
+<img width="1919" height="889" alt="Screenshot 2026-03-23 164120" src="https://github.com/user-attachments/assets/c3849a18-e881-4e51-b41f-31320f6b83a0" />
+
 ## Project structure
 
 ```
