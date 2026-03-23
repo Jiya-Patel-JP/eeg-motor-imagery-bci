@@ -34,8 +34,8 @@ print(f"Fold accuracies: {[f'{s:.2f}' for s in scores]}")
 print(f"Mean accuracy:   {scores.mean():.2%}")
 print(f"Std deviation:   {scores.std():.2%}")
 
-# ── Train final model on all data & save ───────────────────────
+# Train final model on all data & save
 pipeline.fit(X, y)
 joblib.dump(pipeline, 'model.pkl')
 joblib.dump(le, 'label_encoder.pkl')
-print("\nModel saved to model.pkl ✅")
+print("\nModel saved to model.pkl")
