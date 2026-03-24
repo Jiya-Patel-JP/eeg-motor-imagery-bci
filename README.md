@@ -7,7 +7,7 @@ A Brain-Computer Interface (BCI) project that classifies imagined hand movements
 - Loads real EEG data from the [PhysioNet Motor Imagery dataset](https://physionet.org/content/eegmmidb/1.0.0/)
 - Preprocesses raw brain signals: bandpass filtering (8–30 Hz), epoching
 - Classifies **imagined fist vs. feet movement** using a CSP + SVM pipeline
-- Replays classifications through a Flask server into a live WebXR scene — the orb changes colour based on the predicted mental state
+- Replays classifications through a Flask server into a live WebXR scene; the orb changes colour based on the predicted mental state
 
 **Model accuracy: ~89% (5-fold cross-validation)**
 
@@ -25,7 +25,7 @@ A Brain-Computer Interface (BCI) project that classifies imagined hand movements
 eeg_bci/
 ├── preprocess.py      # Load EEG data, filter, epoch, save X.npy + y.npy
 ├── classify.py        # Train CSP + SVM pipeline, evaluate, save model.pkl
-├── app.py             # Flask server — replays epochs, serves WebXR frontend
+├── app.py             # Flask server (replays epochs, serves WebXR frontend)
 ├── templates/
 │   └── index.html     # A-Frame WebXR scene
 └── requirements.txt
