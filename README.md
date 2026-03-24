@@ -5,7 +5,8 @@ A Brain-Computer Interface (BCI) project that classifies imagined hand movements
 ## What it does
 
 - Loads real EEG data from the [PhysioNet Motor Imagery dataset](https://physionet.org/content/eegmmidb/1.0.0/)
-- Preprocesses raw brain signals: bandpass filtering (8–30 Hz), epoching
+- Preprocesses raw brain signals: bandpass filtering (8–30 Hz), ICA-based artifact removal, and epoching
+- Rejects bad epochs via peak-to-peak amplitude threshold (150 µV)
 - Classifies **imagined fist vs. feet movement** using a CSP + SVM pipeline
 - Replays classifications through a Flask server into a live WebXR scene; the orb changes colour based on the predicted mental state
 
@@ -17,13 +18,39 @@ A Brain-Computer Interface (BCI) project that classifies imagined hand movements
 |------|------|
 | 🔵 Blue orb | 🟢 Green orb |
 
-<img width="1919" height="889" alt="Screenshot 2026-03-23 164120" src="https://github.com/user-attachments/assets/c3849a18-e881-4e51-b41f-31320f6b83a0" />
+## Preprocessing pipeline
+
+```
+Raw EEG (64 ch, 160 Hz)
+    │
+    ▼
+Bandpass filter  8–30 Hz  (mu + beta band, FIR firwin)
+    │
+    ▼
+ICA  (n=20 components, FastICA extended)
+    ├── Ocular artifacts   — automated via Fp1 proxy (z-score ≥ 3.0)
+    └── Muscle artifacts   — automated via find_bads_muscle (score ≥ 0.5)
+    │
+    ▼
+Epoch extraction  [0, 4 s]  — T1 = fist, T2 = feet
+    │
+    ▼
+Bad epoch rejection  (peak-to-peak > 150 µV)
+    │
+    ▼
+X.npy  (epochs × channels × times)
+y.npy  (labels)
+```
+
+### Why ICA?
+
+The PhysioNet motor imagery dataset has no dedicated EOG or EMG channel, so artifact removal relies on blind source separation. ICA decomposes the 64-channel signal into independent components; components that correlate strongly with frontal-pole activity (Fp1, eye blinks/saccades) or show high-frequency muscle power bursts are identified automatically and projected out before epoching. This is standard practice for BCI pipelines without reference physiological channels.
 
 ## Project structure
 
 ```
 eeg_bci/
-├── preprocess.py      # Load EEG data, filter, epoch, save X.npy + y.npy
+├── preprocess.py      # Load, filter, ICA, epoch, reject, save X.npy + y.npy
 ├── classify.py        # Train CSP + SVM pipeline, evaluate, save model.pkl
 ├── app.py             # Flask server (replays epochs, serves WebXR frontend)
 ├── templates/
@@ -36,9 +63,10 @@ eeg_bci/
 ```bash
 python -m venv venv
 venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS / Linux
 pip install -r requirements.txt
 
-# Step 1 — preprocess (downloads ~7MB of EEG data on first run)
+# Step 1 — preprocess (downloads ~7 MB of EEG data on first run)
 python preprocess.py
 
 # Step 2 — train classifier
@@ -51,11 +79,11 @@ python app.py
 
 ## Stack
 
-- **MNE-Python** — EEG signal processing
+- **MNE-Python** — EEG signal processing & ICA
 - **scikit-learn** — CSP spatial filtering + SVM classification
 - **Flask** — lightweight backend serving predictions
 - **A-Frame (WebXR)** — 3D browser scene reacting to BCI output
 
 ## Dataset
 
-Schalk, G., McFarland, D.J., Hinterberger, T., Birbaumer, N., Wolpaw, J.R. (2004). BCI2000: A General-Purpose Brain-Computer Interface System. IEEE Transactions on Biomedical Engineering.
+Schalk, G., McFarland, D.J., Hinterberger, T., Birbaumer, N., Wolpaw, J.R. (2004). BCI2000: A General-Purpose Brain-Computer Interface System. *IEEE Transactions on Biomedical Engineering.*
